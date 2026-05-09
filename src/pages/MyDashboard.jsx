@@ -99,7 +99,7 @@ function ConnectionRow({ label, type, matches, onAccept, onReject }) {
 export default function MyDashboard() {
   const navigate = useNavigate()
   const toast = useToast()
-  const { current: biz, refreshCurrent } = useBusiness()
+  const { current: biz } = useBusiness()
 
   const [matches, setMatches] = useState([])
   const [loading, setLoading] = useState(true)
@@ -108,13 +108,8 @@ export default function MyDashboard() {
   const load = useCallback(async () => {
     if (!biz?._id) return
     try {
-      const [mRes, bRes] = await Promise.all([
-        businessApi.getMatches(biz._id),
-        businessApi.get(biz._id)
-      ])
+      const mRes = await businessApi.getMatches(biz._id)
       setMatches(mRes.data)
-      // sync fresh data silently
-      refreshCurrent()
     } catch {
       toast('Failed to load your dashboard', 'error')
     } finally {
@@ -125,14 +120,12 @@ export default function MyDashboard() {
   useEffect(() => { load() }, [load])
 
   useSocket({
-    new_match: (data) => {
-      if (data.business_a === biz?._id || data.business_b === biz?._id) {
-        toast('New match found! 🎉', 'success')
-        load()
-      }
+    new_match: () => {
+      toast('New match found!', 'success')
+      load()
     },
-    match_accepted: () => load()
-  })
+    match_accepted: () => load(),
+  }, biz?._id)
 
   async function handleAccept(matchId) {
     await matchApi.accept(matchId)
