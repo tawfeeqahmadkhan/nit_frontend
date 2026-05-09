@@ -9,7 +9,8 @@ export function useSocket(handlers = {}, bizId = null) {
 
   useEffect(() => {
     if (!socketInstance) {
-      socketInstance = io({ transports: ['websocket'] })
+      const url = import.meta.env.VITE_API_URL || undefined
+      socketInstance = io(url, { transports: ['websocket'] })
     }
     const socket = socketInstance
 
