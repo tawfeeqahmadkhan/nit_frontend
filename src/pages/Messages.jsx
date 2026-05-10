@@ -50,7 +50,7 @@ export default function Messages() {
         setMatches(accepted)
         // Auto-select from URL param
         if (urlMatchId) {
-          const found = accepted.find(m => m._id === urlMatchId)
+          const found = accepted.find(m => m._id?.toString() === urlMatchId)
           if (found) setActiveMatch(found)
         }
       })

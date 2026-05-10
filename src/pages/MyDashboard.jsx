@@ -11,7 +11,7 @@ import { useSocket } from '../hooks/useSocket'
 import { useToast } from '../components/Toast'
 
 /* ─── Connection Row ──────────────────────────────────────────────────────── */
-function ConnectionRow({ label, type, matches, onAccept, onReject }) {
+function ConnectionRow({ label, type, matches, onAccept, onReject, onChat }) {
   const navigate = useNavigate()
   return (
     <div className="mb-3 last:mb-0">
@@ -77,7 +77,13 @@ function ConnectionRow({ label, type, matches, onAccept, onReject }) {
                     </div>
                   )}
                   {m.status === 'accepted' && (
-                    <CheckCircle size={11} className="text-green-500 flex-shrink-0" />
+                    <button
+                      onClick={e => { e.stopPropagation(); onChat(m._id) }}
+                      className="p-1 rounded-lg bg-green-100 text-green-700 hover:bg-green-200"
+                      title="Chat"
+                    >
+                      <MessageSquare size={11} />
+                    </button>
                   )}
                 </div>
               )
@@ -128,13 +134,22 @@ export default function MyDashboard() {
   }, biz?._id)
 
   async function handleAccept(matchId) {
-    await matchApi.accept(matchId)
-    toast('Connection accepted!', 'success')
-    load()
+    try {
+      await matchApi.accept(matchId)
+      toast('Connection accepted!', 'success')
+      load()
+    } catch (err) {
+      toast(err.response?.data?.error || 'Failed to accept', 'error')
+    }
   }
   async function handleReject(matchId) {
-    await matchApi.reject(matchId)
-    load()
+    try {
+      await matchApi.reject(matchId)
+      toast('Match dismissed', 'info')
+      load()
+    } catch (err) {
+      toast(err.response?.data?.error || 'Failed to dismiss', 'error')
+    }
   }
 
   async function rematch() {
@@ -332,6 +347,7 @@ export default function MyDashboard() {
                 matches={m}
                 onAccept={handleAccept}
                 onReject={handleReject}
+                onChat={id => navigate(`/messages/${id}`)}
               />
             ))}
           </div>
@@ -362,6 +378,7 @@ export default function MyDashboard() {
                 matches={m}
                 onAccept={handleAccept}
                 onReject={handleReject}
+                onChat={id => navigate(`/messages/${id}`)}
               />
             ))}
           </div>
@@ -456,7 +473,7 @@ export default function MyDashboard() {
                     )}
                     {m.status === 'accepted' && (
                       <button
-                        onClick={() => navigate('/messages')}
+                        onClick={() => navigate(`/messages/${m._id}`)}
                         className="text-xs px-2.5 py-1 rounded-lg bg-green-50 text-green-700 border border-green-100 hover:bg-green-100 transition-colors flex items-center gap-1"
                       >
                         <MessageSquare size={10} /> Chat
