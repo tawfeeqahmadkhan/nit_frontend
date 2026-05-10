@@ -10,18 +10,33 @@ export function useSocket(handlers = {}, bizId = null) {
   useEffect(() => {
     if (!socketInstance) {
       const url = import.meta.env.VITE_API_URL || undefined
-      socketInstance = io(url, { transports: ['websocket'] })
+      socketInstance = io(url, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+      })
     }
     const socket = socketInstance
 
-    // Join the business-specific room so we only receive our own match events
-    if (bizId) socket.emit('join_business', bizId)
+    // Join business room now, and re-join after every reconnect
+    function joinBiz() {
+      if (bizId) socket.emit('join_business', bizId)
+    }
+    joinBiz()
+    socket.on('connect', joinBiz)
 
-    const entries = Object.entries(handlersRef.current)
-    entries.forEach(([event, fn]) => socket.on(event, fn))
+    // Register event handlers via wrapper so they always call the latest ref value
+    const events = Object.keys(handlersRef.current)
+    const wrappers = {}
+    events.forEach(event => {
+      wrappers[event] = (...args) => handlersRef.current[event]?.(...args)
+      socket.on(event, wrappers[event])
+    })
 
     return () => {
-      entries.forEach(([event, fn]) => socket.off(event, fn))
+      socket.off('connect', joinBiz)
+      events.forEach(event => socket.off(event, wrappers[event]))
     }
   }, [bizId])
 
