@@ -40,3 +40,7 @@ export const messageApi = {
 export const graphApi = {
   get: () => api.get('/graph'),
 }
+
+export const chatApi = {
+  send: (message, history) => api.post('/chat', { message, history }),
+}

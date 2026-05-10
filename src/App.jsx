@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastProvider } from './components/Toast'
 import { BusinessProvider } from './context/BusinessContext'
+import AiChat from './components/AiChat'
 import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -41,6 +42,7 @@ export default function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <AiChat />
         </BrowserRouter>
       </BusinessProvider>
     </ToastProvider>
