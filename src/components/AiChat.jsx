@@ -74,7 +74,7 @@ export default function AiChat() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(o => !o)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center transition-all ${
+        className={`fixed bottom-32 right-6 z-50 w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center transition-all ${
           open ? 'bg-text-primary text-white rotate-0 scale-95' : 'bg-accent text-white hover:bg-accent-hover hover:scale-105'
         }`}
         title="Ask SolveBot"
